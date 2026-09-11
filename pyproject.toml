@@ -37,9 +37,6 @@ build-backend = "hatchling.build"
 packages = ["cropcatcher"]
 
 [tool.hatch.build.targets.sdist]
-# Ship the library, its tests and its metadata only. Notebooks, rendered
-# documentation and local working data are large and belong in the
-# repository, not in the published distribution.
 include = [
     "cropcatcher",
     "tests",
@@ -53,9 +50,6 @@ include = [
 [tool.ruff]
 line-length = 88
 target-version = "py313"
-# Notebooks are narrative demos, not library code: they carry long French
-# prose lines and are checked by running them, not by linting them. Markdown
-# is excluded so that ruff does not reformat the code blocks in the docs.
 extend-exclude = ["notebooks", "*.md"]
 
 [tool.ruff.lint]
