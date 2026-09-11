@@ -12,9 +12,7 @@
 ![PyPI](https://img.shields.io/badge/pypi-not%20published-lightgrey.svg)
 [![IIIF](https://img.shields.io/badge/IIIF-Presentation%20v2%2Fv3%20%7C%20Image%20API-2873AB)](https://iiif.io/)
 
-
-
-CropCatcher is a Python package for determining whether two images show the same physical content, either entirely or when one image is a crop of the other.
+CropCatcher is a Python package for determining whether two images show the same physical content.
 
 It orchestrates classical [OpenCV](https://opencv.org/)-based local feature matching methods such as [SIFT](https://en.wikipedia.org/wiki/Scale-invariant_feature_transform), [AKAZE](https://docs.opencv.org/4.10.0/db/d70/tutorial_akaze_matching.html) and [ORB](https://en.wikipedia.org/wiki/Oriented_FAST_and_rotated_BRIEF), with descriptor matching, [RANSAC](https://en.wikipedia.org/wiki/Random_sample_consensus) and [homography](https://en.wikipedia.org/wiki/Homography_(computer_vision)) estimation for geometric verification and localization and exposes with a simple API.
 
