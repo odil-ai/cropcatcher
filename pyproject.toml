@@ -18,7 +18,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/odil-ai/cropcatcher/"
 Repository = "https://github.com/odil-ai/cropcatcher/"
-Documentation = "odil-ai.github.io/cropcatcher/"
+Documentation = "https://odil-ai.github.io/cropcatcher/"
 Issues = "https://github.com/odil-ai/cropcatcher/issues"
 
 [dependency-groups]
