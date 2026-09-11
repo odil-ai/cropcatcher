@@ -6,7 +6,6 @@ edit_uri: ""
 theme:
   name: material
   logo: assets/cropcatcher_logo.png
-  # square crop of the C mark: the full wordmark is illegible at 16x16
   favicon: assets/favicon.png
   palette:
     - scheme: default
@@ -37,8 +36,6 @@ markdown_extensions:
   - attr_list
   - tables
   - pymdownx.superfences:
-      # Route ```mermaid blocks to Material's bundled mermaid renderer
-      # instead of rendering them as plain code.
       custom_fences:
         - name: mermaid
           class: mermaid
