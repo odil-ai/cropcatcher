@@ -4,7 +4,6 @@
   <img src="docs/assets/cropcatcher_logo.png" alt="CropCatcher" width="400">
 </p>
 
-
 ## *retrieve the image source of any visual crop*
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/)
