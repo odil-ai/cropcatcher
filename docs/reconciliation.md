@@ -1,6 +1,6 @@
 # Batch reconciliation
 
-[`notebooks/reconciliation.ipynb`](../notebooks/reconciliation.ipynb) reconciles a CSV of folio images with their corresponding IIIF manifests.
+[`notebooks/reconciliation.ipynb`](https://github.com/odil-ai/cropcatcher/blob/main/notebooks/reconciliation.ipynb) reconciles a CSV of folio images with their corresponding IIIF manifests.
 
 Each input row represents **one folio image and its manuscript manifest**. The notebook searches the relevant canvases and writes the **top-N candidate pages** for each folio.
 
