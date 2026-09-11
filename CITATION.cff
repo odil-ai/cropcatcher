@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "CropCatcher: Locate a Visual Crop Inside Candidate Images or IIIF Manifests"
+type: software
+version: 0.1.0
+date-released: 2026-09-07
+license: MIT
+authors:
+  - family-names: Terriel
+    given-names: Lucas
+    affiliation: "École nationale des chartes - PSL"
+keywords:
+  - computer-vision
+  - feature-matching
+  - iiif
+  - sift
+  - image-retrieval

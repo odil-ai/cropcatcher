@@ -1,0 +1,50 @@
+site_name: CropCatcher
+site_description: Locate a query image inside candidate images using classical local feature matching algorithms, with IIIF support.
+repo_url: https://github.com/
+edit_uri: ""
+
+theme:
+  name: material
+  logo: assets/cropcatcher_logo.png
+  # square crop of the C mark: the full wordmark is illegible at 16x16
+  favicon: assets/favicon.png
+  palette:
+    - scheme: default
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - navigation.sections
+    - content.code.copy
+
+nav:
+  - Overview: index.md
+  - Matching local images: usage.md
+  - Searching IIIF: iiif.md
+  - Batch reconciliation: reconciliation.md
+  - Benchmarks: benchmarks.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - pymdownx.superfences:
+      # Route ```mermaid blocks to Material's bundled mermaid renderer
+      # instead of rendering them as plain code.
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+
+not_in_nav: |
+  evaluation/

@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Check the tag matches the project version
+        if: github.event_name == 'release'
+        run: |
+          project_version="$(uv version --short)"
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$project_version" != "$tag" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the version in pyproject.toml ($project_version)"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+
+      - name: Lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Test
+        run: uv run pytest -q
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Check metadata renders on PyPI
+        run: uvx twine check dist/*
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: distributions
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/cropcatcher
+    permissions:
+      # Required for PyPI trusted publishing; no API token is stored.
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: distributions
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1

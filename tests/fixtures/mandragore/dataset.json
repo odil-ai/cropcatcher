@@ -1,0 +1,134 @@
+{
+  "$comment": "Real IIIF evaluation fixtures for CropCatcher, sourced from the BnF 'Mandragore - echantillon segmente 2019' dataset (https://api.bnf.fr/index.php/fr/mandragore-echantillon-segmente-2019). Segments_Enluminures.csv is the full upstream dataset (631 segmented illuminations across 8 Gallica manuscripts); the 6 cases below are a small, hand-picked subset with locally cached crop images, used by notebooks/iiif_guide.ipynb and by cropcatcher's evaluation. Manifests and candidate pages are resolved live from Gallica; only the query crops are cached, since they are the one artifact that cannot be regenerated from the manifest alone.",
+  "attribution": "Bibliotheque nationale de France (Gallica / Mandragore)",
+  "license": "https://gallica.bnf.fr/html/und/conditions-dutilisation-des-contenus-de-gallica",
+  "source_dataset": {
+    "name": "Mandragore - echantillon segmente 2019",
+    "url": "https://api.bnf.fr/index.php/fr/mandragore-echantillon-segmente-2019",
+    "csv_path": "Segments_Enluminures.csv"
+  },
+  "cases": [
+    {
+      "id": "gaston_phebus_f2v_veneurs",
+      "manuscript": "Francais 1291 - Gaston Phebus, Livre de la chasse",
+      "legend": "Gaston Phebus et veneurs",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b525064305/manifest.json",
+      "canvas_label": "2v",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b525064305/f14",
+      "crop_path": "crops/gaston_phebus_f2v_veneurs.jpg",
+      "region": [580, 108, 2412, 2130],
+      "expected_match": true
+    },
+    {
+      "id": "gaston_phebus_f5v_cerf",
+      "manuscript": "Francais 1291 - Gaston Phebus, Livre de la chasse",
+      "legend": "Faune : cerf",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b525064305/manifest.json",
+      "canvas_label": "5v",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b525064305/f20",
+      "crop_path": "crops/gaston_phebus_f5v_cerf.jpg",
+      "region": [1983, 1658, 1062, 1138],
+      "expected_match": true
+    },
+    {
+      "id": "barlaam_f1v_saints",
+      "manuscript": "Arabe 274 - Barlaam et Josaphat",
+      "legend": "Saints Barlaam et Josaphat",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8419219x/manifest.json",
+      "canvas_label": "1v",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8419219x/f12",
+      "crop_path": "crops/barlaam_f1v_saints.jpg",
+      "region": [173, 453, 2997, 4314],
+      "expected_match": true
+    },
+    {
+      "id": "barlaam_f11v_josaphat",
+      "manuscript": "Arabe 274 - Barlaam et Josaphat",
+      "legend": "Saint Josaphat dans son palais",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8419219x/manifest.json",
+      "canvas_label": "11v",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8419219x/f32",
+      "crop_path": "crops/barlaam_f11v_josaphat.jpg",
+      "region": [254, 1636, 2371, 2745],
+      "expected_match": true
+    },
+    {
+      "id": "cynegetica_f4v_chasse",
+      "manuscript": "Grec 2736 - Oppien, Cynegetica",
+      "legend": "Chasse diurne",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60005116/manifest.json",
+      "canvas_label": "4v",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60005116/f12",
+      "crop_path": "crops/cynegetica_f4v_chasse.jpg",
+      "region": [760, 543, 1715, 563],
+      "expected_match": true
+    },
+    {
+      "id": "cynegetica_f9_chevaux",
+      "manuscript": "Grec 2736 - Oppien, Cynegetica",
+      "legend": "Faune : chevaux combattant des betes sauvages",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60005116/manifest.json",
+      "canvas_label": "9",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60005116/f23",
+      "crop_path": "crops/cynegetica_f9_chevaux.jpg",
+      "region": [450, 685, 1966, 720],
+      "expected_match": true
+    },
+    {
+      "id": "petrarque_f1_roue",
+      "manuscript": "Francais 225 - Petrarque, De remediis utriusque fortunae",
+      "legend": "Allegorie : Roue de la Fortune",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60007782/manifest.json",
+      "canvas_label": "1",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60007782/f13",
+      "crop_path": "crops/petrarque_f1_roue.jpg",
+      "region": [518, 382, 3488, 4905],
+      "expected_match": true
+    },
+    {
+      "id": "petrarque_f8_raison",
+      "manuscript": "Francais 225 - Petrarque, De remediis utriusque fortunae",
+      "legend": "Allegorie : Raison et l'homme",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60007782/manifest.json",
+      "canvas_label": "8",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60007782/f27",
+      "crop_path": "crops/petrarque_f8_raison.jpg",
+      "region": [447, 421, 3495, 4920],
+      "expected_match": true
+    },
+    {
+      "id": "latin757_f24_creation",
+      "manuscript": "Latin 757 - Bible historiale",
+      "legend": "Creation : lumiere",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8470209d/manifest.json",
+      "canvas_label": "24",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8470209d/f51",
+      "crop_path": "crops/latin757_f24_creation.jpg",
+      "region": [146, 66, 2752, 3291],
+      "expected_match": true
+    },
+    {
+      "id": "latin757_f4_armes",
+      "manuscript": "Latin 757 - Bible historiale",
+      "legend": "Armes de Julien Regin",
+      "manifest_url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8470209d/manifest.json",
+      "canvas_label": "4",
+      "service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8470209d/f11",
+      "crop_path": "crops/latin757_f4_armes.jpg",
+      "region": [398, 195, 2317, 3945],
+      "expected_match": true
+    }
+  ],
+  "negative_pairs": [
+    {"query_id": "gaston_phebus_f2v_veneurs", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8419219x/f12", "expected_match": false},
+    {"query_id": "gaston_phebus_f5v_cerf", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60005116/f12", "expected_match": false},
+    {"query_id": "barlaam_f1v_saints", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b525064305/f14", "expected_match": false},
+    {"query_id": "barlaam_f11v_josaphat", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60005116/f23", "expected_match": false},
+    {"query_id": "cynegetica_f4v_chasse", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8419219x/f32", "expected_match": false},
+    {"query_id": "cynegetica_f9_chevaux", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b525064305/f20", "expected_match": false},
+    {"query_id": "petrarque_f1_roue", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8470209d/f51", "expected_match": false},
+    {"query_id": "petrarque_f8_raison", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8470209d/f11", "expected_match": false},
+    {"query_id": "latin757_f24_creation", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60007782/f13", "expected_match": false},
+    {"query_id": "latin757_f4_armes", "against_service_id": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b60007782/f27", "expected_match": false}
+  ]
+}
