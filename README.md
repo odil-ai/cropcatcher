@@ -20,8 +20,8 @@ CropCatcher is not a semantic similarity tool (not using visual embeddings): It 
 
 **Typical Cultural Heritage use case**: you've found an old, low-resolution or cropped image
 somewhere like a screenshot, a thumbnail, a scan on a blog or in a PDF and you
-suspect it comes from a page held in a digital library such as BnF-Gallica.
-CropCatcher searches across one or more IIIF manifests,
+suspect it comes from a page held in a digital library such as [BnF-Gallica](https://gallica.bnf.fr/accueil/fr/html/accueil-fr).
+CropCatcher searches across one or more [IIIF](https://iiif.io/) manifests,
 tells you which page
 it's actually contained in and where, and hands back that page's IIIF
 service. So, you can fetch the original at full resolution and read off its
@@ -100,11 +100,11 @@ MatchResult(
 - **`matches`**: descriptor matches that passed Lowe's ratio test (from the
   original [SIFT](https://en.wikipedia.org/wiki/Scale-invariant_feature_transform)
   paper an upper
-  bound on `inliers` Cf. [Pipeline](#pipeline)), before any geometric check.
+  bound on `inliers` check [Pipeline](#overall-pipeline), before any geometric check.
 - **`inliers`** of those, the ones geometrically consistent with the
   estimated [homography](https://en.wikipedia.org/wiki/Homography_(computer_vision))
   under [RANSAC](https://en.wikipedia.org/wiki/Random_sample_consensus). The
-  primary evidence of an actual match (Cf. [Pipeline](#pipeline)).
+  primary evidence of an actual match (see [Pipeline](#overall-pipeline)).
 - **`inlier_ratio`**, `inliers / matches`: how clean the match is,
   independent of how large it is.
 - **`bbox`**, `(x0, y0, x1, y1)` the query's bounding box localized inside
@@ -185,26 +185,19 @@ draw_localization(debug.candidate_image, debug.query_image.shape, debug.result.h
 
 ## Playground notebook
 
-An interactive, bilingual (FR/EN) notebook covering the whole pipeline (
+- [`notebooks/playground.ipynb`](notebooks/playground.ipynb) is an interactive, bilingual (FR/EN) notebook covering the whole pipeline (
 keypoint detection, ratio filtering, RANSAC/homography, localization,
 SIFT vs AKAZE vs ORB, indexing, and IIIF) using self-generated synthetic
 images so it runs fully offline:
 
-```bash
-uv sync --group notebook
-uv run jupyter lab notebooks/
-```
-
-[`notebooks/iiif_guide.ipynb`](notebooks/iiif_guide.ipynb) is a companion
+- [`notebooks/iiif_guide.ipynb`](notebooks/iiif_guide.ipynb) is a companion
 notebook focused on `search_iiif` against **real** Gallica manifests, reusing
 the same crops and manifests as [Evaluation](#evaluation)
 (`tests/fixtures/mandragore/`). It covers two simple, realistic usage
-patterns — searching a crop in a manifest you already know, and searching
+patterns: searching a crop in a manifest you already know, and searching
 several crops across a short list of candidate manifests.
 
-### Batch reconciliation
-
-[`notebooks/reconciliation.ipynb`](notebooks/reconciliation.ipynb) is the
+<!--[`notebooks/reconciliation.ipynb`](notebooks/reconciliation.ipynb) is the
 batch counterpart: give it a CSV where **one row = one folio image + its
 manuscript's IIIF manifest**, and it writes a new CSV listing, for each
 folio, the **top-N candidate canvases** of that manifest (i.e. which
@@ -215,6 +208,14 @@ The number of candidates is configurable, and the output is tidy (one row per
 result rather than a re-run. It groups rows by manifest and builds an `Index`
 once per manuscript, since several folios usually share one manifest.
 Downloading and describing each canvas once instead of once per folio.
+-->
+
+To run notebooks us Jupyterlab: 
+
+```bash
+uv sync --group notebook
+uv run jupyter lab notebooks/
+```
 
 ## Overall pipeline
 
@@ -284,12 +285,10 @@ only its own true source) from which it derives:
 - **Processing time**, split into feature detection and descriptor
   matching + RANSAC.
 
-`cropcatcher.evaluation.evaluate_transforms` complements this with a
-**robustness study**: each query crop is put through a lot of
-image-level transformations. It's a sort of degradation a real crop can
-suffer (photographed at an angle, resized, re-compressed)  and re-matched
-against *only its own* true source canvas, to see how much score/inliers
-degrade rather than how a whole corpus ranks:
+
+`cropcatcher.evaluation.evaluate_transforms` complements the retrieval benchmark with a robustness study. A simple crop-to-source comparison is too easy, so each query crop is degraded with realistic image transformations such as perspective changes, resizing and recompression, then matched only against its true source canvas.
+
+The goal is not to rank a corpus, but to measure how score and inlier counts degrade under realistic distortions.
 
 | transform | what it simulates |
 |---|---|
@@ -331,45 +330,25 @@ uv run python scripts/run_evaluation.py
 
 ![Robustness to query-side transformations](docs/evaluation/robustness.png)
 
-- **SIFT never drops below Recall = 1.0** across any transform tested here,
-  including a 45° rotation, a 4x downscale and heavy JPEG compression — a
-  direct payoff of its scale/rotation-invariant design.
-- **AKAZE is just as robust on recall**, but its match *quality* is visibly
-  more sensitive to aggressive downscaling: mean inliers on the true pair
-  drop from 817 (original) to 44 at `scale_25`, even though it still clears
-  `min_inliers=8`.
-- **ORB is the most fragile**: it's already missing one true match at full
-  resolution, and a 4x downscale (`scale_25`) knocks its recall down further
-  to 0.80 and its mean score to 0.77 — the fewer keypoints ORB extracts by
-  default leave little margin once the image is degraded.
+- **SIFT remains fully robust** across all tested transformations, including 45° rotation, 4x downscaling and heavy JPEG compression.
+- **AKAZE also keeps Recall = 1.0**, but aggressive downscaling significantly reduces the number of inliers, even when matches still pass the threshold.
+- **ORB is the most fragile**, with lower recall even at full resolution and further degradation under strong downscaling.
 
 ### Examples: a distorted crop among good and bad candidates
 
-Two real cases, each with an artificial distortion applied to the query crop,
-matched with SIFT against all 10 candidate canvases (true source in green,
-decoys in red):
+Two real examples illustrate how SIFT behaves under distortion:
 
 ![Retrieving a 45°-rotated crop](docs/evaluation/example_gaston_phebus_f2v_veneurs.png)
 
-A 45° rotation is enough to make the crop unrecognizable to the eye at a
-glance, yet the true source (Gaston Phébus, f. 2v) still scores 0.72 —
-comfortably ahead of the next-best decoy (0.70, from an entirely different,
-much smaller-scale illumination) and far ahead of the rest (≤ 0.65).
+- **45° rotation**: the true source still ranks first with a score of 0.72, ahead of all decoys.
 
 ![Retrieving a perspective-warped crop](docs/evaluation/example_latin757_f24_creation.png)
 
-This crop ("Création : lumière") is one of the harder cases in the dataset (
-mostly flat gold and blue fields with limited texture) warped as if
-photographed off-axis. The true source still wins clearly (0.83 vs. 0.34 for
-the closest decoy), but the margin is narrower than for a busier illumination,
-illustrating why low-texture crops are the ones worth watching when tuning
-`min_inliers` or `ransac_reproj_threshold` for a specific corpus.
+- **Perspective distortion on a low-texture crop**: This crop ("Création : lumière") is one of the harder cases in the dataset (
+mostly flat gold and blue fields with limited texture). The true source remains first (0.83 vs. 0.34 for the closest decoy), but the smaller margin shows that low-texture regions are more sensitive to parameter tuning.
 
-This is a 10-case sample, meant to validate the evaluation pipeline
-end-to-end on real IIIF data and give a first, honest read of the three
-methods' tradeoffs — not a statistically robust benchmark. Growing
-`tests/fixtures/mandragore/dataset.json` from the full 631-segment CSV (or
-adding manifests of your own) will sharpen these numbers.
+This 10-case dataset is an **end-to-end validation sample**, not a statistically robust benchmark. Expanding `tests/fixtures/mandragore/dataset.json` with more IIIF examples will make the comparison more representative.
+
 
 ## Unit tests, format, lint
 
@@ -391,9 +370,10 @@ If you use CropCatcher in your research, please cite (see
 ```bibtex
 @software{terriel_cropcatcher,
   author  = {Terriel, Lucas},
+  institution  = {{École nationale des chartes - PSL}},
   title   = {{CropCatcher: locate a query image inside candidate images using classical local feature matching algorithms, with IIIF support.}},
   year    = {2026},
   version = {0.0.1},
-  license = {MIT}
+  license = {MIT},
 }
 ```
