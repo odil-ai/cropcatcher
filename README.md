@@ -9,7 +9,7 @@
 [![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-![PyPI](https://img.shields.io/badge/pypi-not%20published-lightgrey.svg)
+[![PyPI](https://img.shields.io/pypi/v/cropcatcher.svg)](https://pypi.org/project/cropcatcher/)
 [![IIIF](https://img.shields.io/badge/IIIF-Presentation%20v2%2Fv3%20%7C%20Image%20API-2873AB)](https://iiif.io/)
 
 CropCatcher is a Python package for determining whether two images show the same physical content.
@@ -373,7 +373,7 @@ If you use CropCatcher in your research, please cite (see
   institution  = {{École nationale des chartes - PSL}},
   title   = {{CropCatcher: locate a query image inside candidate images using classical local feature matching algorithms, with IIIF support.}},
   year    = {2026},
-  version = {0.0.1},
+  version = {0.0.2},
   license = {MIT},
 }
 ```

@@ -1,6 +1,6 @@
 [project]
 name = "cropcatcher"
-version = "0.0.1"
+version = "0.0.2"
 description = "CropCatcher: locate a query image inside candidate images using classical local feature matching algorithms, with IIIF support."
 readme = "README.md"
 license = "MIT"

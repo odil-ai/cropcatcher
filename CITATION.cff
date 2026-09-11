@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "CropCatcher: locate a query image inside candidate images using classical local feature matching algorithms, with IIIF support."
 type: software
-version: 0.1.0
-date-released: 2026-09-07
+version: 0.0.2
+date-released: 2026-09-11
 license: MIT
 authors:
   - family-names: Terriel

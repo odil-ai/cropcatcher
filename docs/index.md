@@ -12,7 +12,7 @@
   <a href="https://www.python.org/"><img alt="Python 3.13+" src="https://img.shields.io/badge/python-3.13%2B-blue.svg"></a>
   <a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json"></a>
   <a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
-  <img alt="PyPI" src="https://img.shields.io/badge/pypi-not%20published-lightgrey.svg">
+  <a href="https://pypi.org/project/cropcatcher/"><img alt="PyPI" src="https://img.shields.io/pypi/v/cropcatcher.svg"></a>
   <a href="https://iiif.io/"><img alt="IIIF: Presentation v2/v3, Image API" src="https://img.shields.io/badge/IIIF-Presentation%20v2%2Fv3%20%7C%20Image%20API-2873AB"></a>
   <a href="https://github.com/"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green.svg"></a>
 </p>
@@ -145,7 +145,7 @@ in `CITATION.cff` at the repository root, which GitHub exposes through its
   title        = {{CropCatcher: Locate a Visual Crop Inside Candidate Images or IIIF Manifests}},
   organization = {École nationale des chartes - PSL},
   year         = {2026},
-  version      = {0.1.0},
+  version      = {0.0.2},
   license      = {MIT}
 }
 ```
