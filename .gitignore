@@ -18,10 +18,3 @@ site/
 # VS Code settings, IDE
 .vscode/
 
-# Agents
-CLAUDE.md
-
-# Others
-data/
-notebooks/test.ipynb
-notebooks/reconciliation.ipynb

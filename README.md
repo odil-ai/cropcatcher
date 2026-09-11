@@ -80,7 +80,7 @@ Output: Each result is a `MatchResult`:
 
 ```python
 MatchResult(
-    source="folio_142r.jpg",
+    source="image_14.jpg",
     score=0.87,
     matches=94,
     inliers=61,

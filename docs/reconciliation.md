@@ -1,103 +1,90 @@
 # Batch reconciliation
 
-[`notebooks/reconciliation.ipynb`](https://github.com/) takes a CSV where
-**one row = one folio image + its manuscript's IIIF manifest**, and writes a
-new CSV giving, for each folio, the **top-N candidate canvases** — i.e. which
-digitized page each image actually is.
+[`notebooks/reconciliation.ipynb`](../notebooks/reconciliation.ipynb) reconciles a CSV of folio images with their corresponding IIIF manifests.
+
+Each input row represents **one folio image and its manuscript manifest**. The notebook searches the relevant canvases and writes the **top-N candidate pages** for each folio.
 
 ## Input and output
 
-Input columns used: a filename resolved against `IMAGES_DIR`, the folio label
-(`1r`, `175v`…), and one or more manifest URLs separated by `|`. Rows whose
-image is missing, or whose manifest column is `blank`, are dropped.
+The input uses:
 
-Output is **long/tidy** — one row per *(folio, rank)*:
+- an image filename resolved against `IMAGES_DIR`
+- an expected folio label such as `1r` or `175v`
+- one or more IIIF manifest URLs separated by `|`
+
+Rows with missing images or no manifest URL are skipped.
+
+The output uses a **long format**, with one row per `(folio, rank)`:
 
 | Column | Meaning |
 |---|---|
-| `rank` | 1 = best candidate. |
-| `candidate_service_id`, `candidate_canvas_label` | The matched canvas and its label. |
-| `score`, `matches`, `inliers`, `inlier_ratio`, `bbox` | The `MatchResult` fields. |
-| `n_canvases_indexed` | How many canvases this folio was compared against. |
-| `target_in_manifest` | Whether a canvas labelled like the expected folio was in the index at all. |
-| `status`, `error` | `ok`, `error`, or `skipped_no_label`. |
+| `rank` | Candidate rank, with `1` being the best match. |
+| `candidate_service_id`, `candidate_canvas_label` | Matched IIIF canvas and label. |
+| `score`, `matches`, `inliers`, `inlier_ratio`, `bbox` | Matching results. |
+| `n_canvases_indexed` | Number of canvases searched for this folio. |
+| `target_in_manifest` | Whether the expected folio label exists in the indexed canvases. |
+| `status`, `error` | Processing status and possible error. |
 
-Because the search is the expensive part, run it **once** with a generous
-`TOP_K`; narrowing to the top 1 or 2 afterwards is a free filter
-(`top_n(df, 2)`), and `to_wide(df, n)` reshapes to one row per folio.
+Because search is the expensive step, run it once with a sufficiently large `TOP_K`. Results can then be filtered with `top_n(df, 2)` or reshaped to one row per folio with `to_wide(df, n)`.
 
-## Why it groups by manifest
+## Grouping by manifest
 
-Several folios usually share one manuscript (≈ 8 on average in our corpus).
-Calling `search_iiif` per folio would re-download and re-describe the whole
-manifest each time. The notebook instead builds one
-[`Index`](usage.md#index) per manifest and searches every folio of that
-manuscript in it. On a 455-canvas manifest with 15 folios that is ~6 minutes
-instead of ~33.
+Several folios usually belong to the same manuscript. Running `search_iiif` independently for each folio would repeatedly download and process the same manifest.
+
+The notebook instead builds one [`Index`](usage.md#index) per manifest and reuses it for all associated folios.
+
+On a 455-canvas manifest with 15 folios, this reduced processing time from about **33 minutes to 6 minutes**.
 
 ## Search window
 
-The decisive cost lever. You already know the expected folio, and the manifest
-exposes canvas labels — so locate the likely position and index **only the
-canvases around it** instead of the whole manuscript.
+The main cost optimization is to restrict the search to canvases near the expected folio label:
 
 ```python
-SEARCH_WINDOW = 20        # None = index the whole manifest
-ON_MISSING_LABEL = "skip" # or "full" to fall back to the whole manuscript
+SEARCH_WINDOW = 20          # None = search the full manifest
+ON_MISSING_LABEL = "skip"   # or "full"
 ```
 
-Since indexing means downloading, this cuts network, description *and*
-comparisons at once — every other lever cuts only one of them. Measured on
-the demo manifest: **51.6 s → 3.3 s** for an identical result.
+Since fewer canvases are processed, this reduces image downloads, feature extraction and comparisons at the same time.
 
-!!! warning "It weakens the label sanity check"
-    The window is chosen *from* the expected label, so verifying afterwards
-    that the winning canvas carries that label is partly circular. It still
-    catches a page labelled `175r` that does not contain the expected image,
-    but it no longer validates retrieval across the whole manuscript. For an
-    independent check, re-run a sample with `SEARCH_WINDOW = None`.
+On the demo manifest, the same result took **3.3 s instead of 51.6 s**.
+
+!!! warning "Label-dependent search"
+    The search window is derived from the expected folio label. This makes the search faster, but it is no longer an independent test across the full manifest.
+
+    For validation, run a sample with `SEARCH_WINDOW = None`.
 
 ## Resuming and failures
 
-A full-corpus run is a batch job of many hours; it will be interrupted.
+Long batch runs can be resumed:
 
 ```python
-RESUME = True   # skip manifests already present in OUTPUT_CSV
+RESUME = True
 ```
 
-Each finished manifest is appended to the output CSV immediately, and
-manifests already in that file are skipped on the next run. Delete the output
-file when you change `METHOD`, `SIZE` or `SEARCH_WINDOW`, otherwise stale
-results are kept.
+Completed manifests are written to the output CSV immediately and skipped on the next run.
 
-A manifest that fails outright (404, server down) is recorded with
-`status="error"` and does not stop the batch. Transient failures are retried
-with backoff inside the [IIIF layer](iiif.md#retries).
+If `METHOD`, `SIZE` or `SEARCH_WINDOW` changes, delete the previous output file to avoid mixing incompatible results.
 
-## Two failures that are not matching errors
+Manifest-level failures are recorded with `status="error"` and do not stop the batch. Temporary network failures are retried by the [IIIF layer](iiif.md#retries).
 
-Distinguish them before reading any agreement rate:
+## Non-matching failures
 
-- **The target page is not in the manifest.** Manifests often digitize only
-  part of a manuscript — one in our corpus exposes 3 pages for 399 expected
-  folios. No match is possible. The `target_in_manifest` column isolates this.
-- **The folio label cannot be located**, so no window can be built:
-  `status="skipped_no_label"`.
+Two situations must be separated from actual matching errors:
 
-Only the remaining rows say anything about matching quality.
+- **Target not present in the manifest**: no correct match is possible. Check `target_in_manifest`.
+- **Expected folio label cannot be found**: no search window can be constructed, producing `status="skipped_no_label"`.
+
+Only valid rows where the expected target can actually be searched should be used to evaluate matching quality.
 
 ## Cost
 
-The notebook calibrates on the run you just did and extrapolates, separating
-the two costs:
+The total cost can be approximated as:
 
-```
-cost ≈ manifests × canvases_indexed × t_index      (paid once per manifest)
-     + folios    × canvases_searched × t_compare   (paid per folio)
+```text
+cost ≈ manifests × canvases_indexed × t_index
+     + folios × canvases_searched × t_compare
 ```
 
-Both terms matter: indexing a canvas requires downloading it, so it is not
-negligible. On our corpus the two were comparable. **Any lever that only
-reduces comparisons — a faster method, fewer keypoints — cannot cut the total
-by more than half.** Only reducing the number of canvases processed attacks
-both.
+Indexing is paid once per manifest, while comparison is paid for every folio.
+
+Reducing the number of processed canvases is therefore the most effective optimization, because it reduces both indexing and matching costs.

@@ -68,10 +68,9 @@ Measured on a 16-core machine, 30 canvases at `!1024,1024`:
 | `search_iiif`, `max_workers=1` | 40.9 s |
 | `search_iiif`, `max_workers=16` | **6.9 s** |
 
-**Matching dominates, not the network.** So `max_workers` is effectively a CPU
-knob: scale it towards your core count. The catch is that it also multiplies
-concurrent requests to the server — 16 workers against one institution is
-aggressive enough to get you throttled.
+**Matching is the main bottleneck, not network access**. max_workers mainly controls CPU parallelism, so increasing it toward your available core count can improve performance.
+
+However, more workers also mean more concurrent requests to the remote server, which may trigger rate limiting.
 
 ## Lower-level API
 

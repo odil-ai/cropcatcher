@@ -18,25 +18,25 @@
 </p>
 
 
-CropCatcher is a Python package for determining whether two images show the same physical content, either entirely or when one image is a crop of the other.
+CropCatcher is a Python package for determining whether two images show the same physical content.
 
 It orchestrates classical [OpenCV](https://opencv.org/)-based local feature matching methods such as [SIFT](https://en.wikipedia.org/wiki/Scale-invariant_feature_transform), [AKAZE](https://docs.opencv.org/4.10.0/db/d70/tutorial_akaze_matching.html) and [ORB](https://en.wikipedia.org/wiki/Oriented_FAST_and_rotated_BRIEF), with descriptor matching, [RANSAC](https://en.wikipedia.org/wiki/Random_sample_consensus) and [homography](https://en.wikipedia.org/wiki/Homography_(computer_vision)) estimation for geometric verification and localization and exposes with a simple API.
 
-CropCatcher is not a semantic similarity tool: It is designed to identify the exact source image, rank candidates and, when relevant, locate the query inside the matching image.
+CropCatcher is not a semantic similarity tool (not using visual embeddings): It is designed to identify the exact source image, rank candidates and, when relevant, locate the query inside the matching image.
 
 **Typical Cultural Heritage use case**: you've found an old, low-resolution or cropped image
-somewhere — a screenshot, a thumbnail, a scan on a blog or in a PDF — and you
-suspect it comes from a page held in a digital library such as Gallica.
-CropCatcher searches across one or more IIIF manifests,
+somewhere like a screenshot, a thumbnail, a scan on a blog or in a PDF and you
+suspect it comes from a page held in a digital library such as [BnF-Gallica](https://gallica.bnf.fr/accueil/fr/html/accueil-fr).
+CropCatcher searches across one or more [IIIF](https://iiif.io/) manifests,
 tells you which page
 it's actually contained in and where, and hands back that page's IIIF
-service — so you can fetch the original at full resolution and read off its
+service. So, you can fetch the original at full resolution and read off its
 metadata (manuscript, shelfmark, folio) straight from the manifest.
 
 ![Is the query crop contained in a candidate folio?](evaluation/concept.png)
 
 A real query crop (left) matched with SIFT against real folios from the
-*same* manuscript on Gallicathe harder: the true
+*same* manuscript scrapped from BnF-Gallica: the true
 source scores clearly highest (green) and is accepted, while other pages
 sharing the same script, style and parchment (red) score far lower and are
 rejected. See [Benchmarks](benchmarks.md) for how this holds up across
@@ -45,71 +45,84 @@ methods and distortions.
 
 ## Install
 
+> Requires `Python >= 3.13`
+
+use `uv`: 
+
 ```bash
 uv add cropcatcher
 ```
+
+or `pip`:
 
 ```bash
 pip install cropcatcher
 ```
 
-Requires Python ≥ 3.13. Runtime dependencies: `opencv-contrib-python-headless`,
-`numpy`.
+## Install (for development only)
 
-!!! warning "Not published yet"
-    CropCatcher is not on PyPI yet. Until the first release ships, install
-    from a clone instead:
-
-    ```bash
-    git clone <repository> && cd IIIF_image_matcher && uv sync
-    ```
+```bash
+git clone git@github.com:odil-ai/cropcatcher.git && cd IIIF_image_matcher/
+uv sync                                         # add --group notebook dev docs for the notebooks, lint tests, mkdocs etc.
+```
 
 ## Quickstart
 
 ```python
 from cropcatcher import Matcher
 
-matcher = Matcher(method="sift")
-results = matcher.search(query="illumination.jpg", images="folios/")
+matcher = Matcher(method="sift")  # or any feature extraction method: "akaze", "orb", "star_brief"
+
+results = matcher.search(
+    query="my_query_image.jpg",
+    images="local_images_folder/",  # a directory, a list of paths, or a single path
+)
 
 best = results.best
-print(best.source, best.score, best.bbox)
+print(best.source, best.score, best.inliers, best.bbox)
+```
+
+Output: Each result is a `MatchResult`:
+
+```python
+MatchResult(
+    source="image_142.jpg",
+    score=0.87,
+    matches=94,
+    inliers=61,
+    inlier_ratio=0.65,
+    bbox=(412, 580, 1034, 1280),
+    homography=...,
+)
 ```
 
 Against a digital library instead of local files:
 
 ```python
 results = matcher.search_iiif(
-    query="illumination.jpg",
+    query="my_query_image.jpg",
     manifests=["https://gallica.bnf.fr/iiif/ark:/12148/btv1b8427253m/manifest.json"],
-    max_canvases=50,
 )
 ```
 
 ## How it works
 
 ```mermaid
-flowchart LR
-    Q["Query image"] --> FD1["Feature detection<br/>& description"]
-    C["Candidate image"] --> FD2["Feature detection<br/>& description"]
-    FD1 --> DM["Descriptor matching<br/>+ ratio test"]
+flowchart TD
+    Q["Query image"] --> FD1["Feature detection & description"]
+    C["Candidate image"] --> FD2["Feature detection & description"]
+    FD1 --> DM["Descriptor matching + Lowe's ratio test"]
     FD2 --> DM
     DM --> RA["RANSAC homography"]
-    RA --> SC["score + bbox"]
+    RA --> SC["Score + localization"]
 ```
 
-1. **Detection & description** — a few thousand keypoints per image, each
-   encoded as a descriptor vector that survives scaling and rotation
-   ([SIFT], [AKAZE], [ORB]).
-2. **Matching** — each query descriptor is paired with its
-   [nearest neighbour][nns] among the candidate's, then filtered by Lowe's
-   ratio test (and optionally a [mutual check](usage.md#mutual-check)).
-3. **[RANSAC]** — fits the [homography] that the largest subset of matches
-   agrees on. This is what separates "many descriptors happen to look alike"
-   from "these are the same physical content".
-4. **Score & localization** — the score weighs inlier ratio and inlier count;
-   the homography projects the crop's corners into the candidate to give a
-   bounding box.
+- **Feature detection & description**: extracts local keypoints and descriptors with [SIFT](https://en.wikipedia.org/wiki/Scale-invariant_feature_transform), [AKAZE](https://docs.opencv.org/4.x/db/d70/tutorial_akaze_matching.html), [ORB](https://en.wikipedia.org/wiki/Oriented_FAST_and_rotated_BRIEF), or optional STAR+BRIEF / [SURF](https://en.wikipedia.org/wiki/Speeded_up_robust_features).
+- **Descriptor matching**: pairs similar descriptors using L2 or [Hamming distance](https://en.wikipedia.org/wiki/Hamming_distance), then filters ambiguous matches with Lowe's ratio test. `mutual_check=True` adds a bidirectional consistency check to reduce false positives.
+- **RANSAC homography**: uses [RANSAC](https://en.wikipedia.org/wiki/Random_sample_consensus) to keep geometrically consistent matches and estimate a [homography](https://en.wikipedia.org/wiki/Homography_(computer_vision)) between the query and candidate.
+- **Score + localization**: combines inlier ratio and count into a confidence score, then projects the query into the candidate to estimate its bounding box.
+
+> SURF requires a custom OpenCV build (see above).
 
 ## Where to go next
 

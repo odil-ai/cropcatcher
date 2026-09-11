@@ -58,10 +58,7 @@ EXAMPLE_GALLERIES = [
 ]
 
 CONCEPT_EXAMPLE_CASE = "gaston_phebus_f2v_veneurs"
-# Other real folios from the *same* manuscript (Français 1291), curated from
-# the Mandragore CSV so each one is a genuine illumination rather than a
-# blank or text-only page — much harder decoys than pages from a different
-# manuscript, since they share the same script, style and parchment.
+
 CONCEPT_EXAMPLE_DECOYS = [
     ("16v", "https://gallica.bnf.fr/iiif/ark:/12148/btv1b525064305/f42"),
     ("48", "https://gallica.bnf.fr/iiif/ark:/12148/btv1b525064305/f105"),
@@ -310,8 +307,8 @@ def build_example_gallery(
 
     Transforms one case's query crop, matches it against every candidate
     canvas in the dataset, and renders the query alongside its top-``top_k``
-    scoring candidates — the true source highlighted in green, decoys in
-    red — so a reader can see the score gap that separates a genuine match
+    scoring candidates. The true source highlighted in green, decoys in
+    red, so a reader can see the score gap that separates a genuine match
     from unrelated pages even after distortion.
 
     :param cases: Known query-crop to source-canvas pairs.
@@ -416,7 +413,7 @@ def build_concept_illustration(
     """Illustrate CropCatcher's core idea: is the query contained in a candidate?
 
     Renders one real, undistorted query crop next to its true source page
-    and a handful of *other real folios from the same manuscript* — a much
+    and a handful of *other real folios from the same manuscript*, a much
     harder set of decoys than pages from a different manuscript, since they
     share the same script, style and parchment. Meant as a small,
     self-explanatory hero image for newcomers, independent of the fuller

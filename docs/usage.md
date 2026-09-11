@@ -54,22 +54,17 @@ MatchResult(
     because unrelated manuscript pages coincidentally clear 8 inliers. The
     score separates true from false pairs far more cleanly.
 
-## Mutual check
+## Mutual check
 
-A match survives only if the candidate descriptor's own nearest neighbour is
-the query descriptor it came from. One extra matching pass in the reverse
-direction, and it discards one-sided matches:
+mutual_check=True keeps only bidirectional matches: a query descriptor must select a candidate descriptor, and that candidate descriptor must also select the original query descriptor as its nearest neighbour.
 
 ```python
 matcher = Matcher(method="sift", mutual_check=True)
-```
+``` 
 
-Measured on the benchmark set: precision **0.26 → 0.91** (28 false positives
-down to 1), score margin between true and false pairs **0.28 → 0.62**, no
-change in Recall@1, for ~22% more matching time.
+This extra reverse matching pass removes many ambiguous one-sided matches. On the benchmark set, precision improved from 0.26 to 0.91, false positives dropped from 28 to 1, and the score margin between true and false pairs increased from 0.28 to 0.62, with no loss in Recall@1. Matching time increased by about 22%.
 
-It is off by default to keep behaviour stable; turn it on for batch work where
-matches are accepted or rejected without a human in the loop.
+It is disabled by default for backward compatibility, but is recommended for automated batch matching where results are accepted without manual revie
 
 ## `Index`
 
@@ -79,19 +74,21 @@ worth it:
 ```python
 from cropcatcher import Index
 
-index = Index(method="sift", mutual_check=True)
-index.add_images("folios/")
-index.save("collection.cropcatcher")
+index = Index(method="sift")
+index.add_images("my_local_files/")
+index.add_iiif(["https://example.org/manifest.json"])  # also downloaded concurrently
 
-index = Index.load("collection.cropcatcher")
-results = index.search("illumination.jpg")
+index.save("collection.cropcatcher") # saved for later
+
+index = Index.load("collection.cropcatcher") # load you index
+results = index.search("illumination.jpg") # search in your index
 ```
 
 `Index` takes the same tuning parameters as `Matcher`, and persists them
 alongside the descriptors so a reloaded index behaves identically.
 
-!!! warning "It is a descriptor cache, not an ANN index"
-    `search()` scans **every** entry — cost grows linearly with corpus size.
+!!! warning "It is a descriptor cache"
+    `search()` scans **every** entry in the index. The cost grows linearly with corpus size.
     What it saves is re-downloading and re-describing candidates, not the
     matching itself. Expect roughly 40 ms per indexed image per query with
     SIFT. Descriptors are also bulky on disk: ~5 MB per full manuscript page.
